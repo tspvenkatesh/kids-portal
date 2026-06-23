@@ -1,0 +1,593 @@
+<div id="root"></div>
+<style>body{background:#172554;margin:0;font-family:ui-sans-serif,system-ui,sans-serif}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="text/babel" data-presets="react">
+const { useState, useMemo, useEffect } = React;
+
+const PATHS = {
+  "layout-dashboard": '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+  "receipt": '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
+  "arrow-up-from-line": '<path d="m18 9-6-6-6 6"/><path d="M12 3v14"/><path d="M5 21h14"/>',
+  "book-user": '<path d="M15 13a3 3 0 1 0-6 0"/><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/><circle cx="12" cy="8" r="2"/>',
+  "settings": '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  "store": '<path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/>',
+  "percent": '<line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+  "plus": '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  "trash-2": '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
+  "pencil": '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
+  "check": '<path d="M20 6 9 17l-5-5"/>',
+  "x": '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  "refresh-cw": '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+  "download": '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+  "cloud-upload": '<path d="M12 13v8"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/>',
+  "calendar": '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+};
+const Icon = ({ name, className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    dangerouslySetInnerHTML={{ __html: PATHS[name] || "" }} />
+);
+
+const SEED_SHOP = "Bangalore-SHOP01";
+const SEED_SHOPS = [SEED_SHOP];
+const SEED_SPENDS = [
+  { id: 1, shop: SEED_SHOP, date: "2026-06-10", purpose: "Advance", amount: 50000, by: "Jacky" },
+  { id: 2, shop: SEED_SHOP, date: "2026-06-10", purpose: "Lock", amount: 580, by: "Jacky" },
+  { id: 3, shop: SEED_SHOP, date: "2026-06-18", purpose: "Glass & Wood work", amount: 14000, by: "Venkatesh" },
+  { id: 4, shop: SEED_SHOP, date: "2026-06-19", purpose: "Doll", amount: 6000, by: "Karthickk Raja" },
+  { id: 5, shop: SEED_SHOP, date: "2026-06-19", purpose: "Light", amount: 3240, by: "Karthickk Raja" },
+  { id: 6, shop: SEED_SHOP, date: "2026-06-19", purpose: "Computer & Bar code scanner", amount: 15937, by: "Venkatesh" },
+  { id: 7, shop: SEED_SHOP, date: "2026-06-19", purpose: "Auto Door Closer", amount: 1500, by: "Karthickk Raja" },
+  { id: 8, shop: SEED_SHOP, date: "2026-06-20", purpose: "Lock, varnish and tube light", amount: 1020, by: "Karthickk Raja" },
+  { id: 9, shop: SEED_SHOP, date: "2026-06-20", purpose: "Bill software AMC", amount: 4000, by: "Karthickk Raja" },
+  { id: 10, shop: SEED_SHOP, date: "2026-06-20", purpose: "Broadband", amount: 1500, by: "Venkatesh" },
+  { id: 11, shop: SEED_SHOP, date: "2026-06-20", purpose: "Chair", amount: 900, by: "Karthickk Raja" },
+];
+
+const fmt = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+const fmtDate = (iso) => { if (!iso) return ""; const [y, m, d] = iso.split("-"); return `${d}-${m}-${y}`; };
+const today = () => new Date().toISOString().slice(0, 10);
+const uid = () => Date.now() + Math.floor(Math.random() * 1000);
+const PARTNER_COLORS = ["#fbbf24", "#38bdf8", "#34d399", "#f472b6", "#a78bfa", "#fb923c"];
+const inputCls = "w-full bg-blue-950 border border-amber-400/20 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-400";
+const labelCls = "block text-xs text-slate-400 mb-1";
+
+function computeTotals(sp, wd, partners) {
+  const invested = sp.reduce((a, s) => a + Number(s.amount || 0), 0);
+  const withdrawn = wd.reduce((a, w) => a + Number(w.amount || 0), 0);
+  const perPartner = {};
+  partners.forEach((p) => (perPartner[p] = { invested: 0, withdrawn: 0 }));
+  sp.forEach((s) => { if (perPartner[s.by]) perPartner[s.by].invested += Number(s.amount || 0); });
+  wd.forEach((w) => { if (perPartner[w.partner]) perPartner[w.partner].withdrawn += Number(w.amount || 0); });
+  return { invested, withdrawn, net: invested - withdrawn, perPartner };
+}
+function Card({ children, className = "" }) {
+  return <div className={`rounded-xl border border-amber-400/15 bg-blue-900/30 p-4 ${className}`}>{children}</div>;
+}
+
+function App() {
+  const [shops, setShops] = useState(SEED_SHOPS);
+  const [activeShop, setActiveShop] = useState(SEED_SHOP);
+  const [spends, setSpends] = useState(SEED_SPENDS);
+  const [withdrawals, setWithdrawals] = useState([]);
+  const [tab, setTab] = useState("dashboard");
+  const [syncUrl, setSyncUrl] = useState("");
+  const [syncState, setSyncState] = useState("idle");
+  const [syncMsg, setSyncMsg] = useState("");
+  const [ledgerPartner, setLedgerPartner] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [shareCfg, setShareCfg] = useState({});
+
+  useEffect(() => { if (!shops.includes(activeShop)) setActiveShop(shops[0] || ""); }, [shops, activeShop]);
+  const inRange = (d) => (!from || d >= from) && (!to || d <= to);
+
+  const shopSpends = useMemo(() => spends.filter((s) => s.shop === activeShop), [spends, activeShop]);
+  const shopWith = useMemo(() => withdrawals.filter((w) => w.shop === activeShop), [withdrawals, activeShop]);
+  const fSpends = useMemo(() => shopSpends.filter((s) => inRange(s.date)), [shopSpends, from, to]);
+  const fWith = useMemo(() => shopWith.filter((w) => inRange(w.date)), [shopWith, from, to]);
+
+  const partners = useMemo(() => {
+    const set = new Set();
+    shopSpends.forEach((s) => s.by && set.add(s.by));
+    shopWith.forEach((w) => w.partner && set.add(w.partner));
+    return [...set];
+  }, [shopSpends, shopWith]);
+  const colorOf = (name) => PARTNER_COLORS[Math.max(0, partners.indexOf(name)) % PARTNER_COLORS.length];
+  const shopTotals = useMemo(() => computeTotals(shopSpends, shopWith, partners), [shopSpends, shopWith, partners]);
+  const fTotals = useMemo(() => computeTotals(fSpends, fWith, partners), [fSpends, fWith, partners]);
+
+  function diag(e) {
+    const m = String(e && e.message ? e.message : e);
+    if (m.includes("Failed to fetch") || m.includes("NetworkError"))
+      return "Failed to fetch — check the URL, that access = 'Anyone', and that you published a new version. (If this page itself is sandboxed, host it on GitHub Pages.)";
+    return m;
+  }
+  async function pushSheet(ns = spends, nw = withdrawals, nsh = shops) {
+    if (!syncUrl) return;
+    setSyncState("saving"); setSyncMsg("");
+    try {
+      const res = await fetch(syncUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ shops: nsh, spends: ns, withdrawals: nw }) });
+      const txt = await res.text();
+      if (!res.ok || /<html/i.test(txt)) throw new Error("Server returned an HTML/login page — set deployment access to 'Anyone'.");
+      setSyncState("saved"); setSyncMsg("✓ Pushed to Sheet."); setTimeout(() => setSyncState("idle"), 2500);
+    } catch (e) { setSyncState("error"); setSyncMsg(diag(e)); }
+  }
+  async function pullSheet() {
+    if (!syncUrl) return; setSyncState("saving"); setSyncMsg("");
+    try {
+      const res = await fetch(syncUrl); const txt = await res.text();
+      if (/<html/i.test(txt)) throw new Error("Got an HTML page instead of data — access must be 'Anyone' and URL must end in /exec.");
+      const data = JSON.parse(txt);
+      if (data.spends) setSpends(data.spends);
+      if (data.withdrawals) setWithdrawals(data.withdrawals);
+      if (data.shops && data.shops.length) setShops(data.shops);
+      setSyncState("saved"); setSyncMsg("✓ Loaded from Sheet."); setTimeout(() => setSyncState("idle"), 2500);
+    } catch (e) { setSyncState("error"); setSyncMsg(diag(e)); }
+  }
+  async function testConnection() {
+    if (!syncUrl) return; setSyncState("saving"); setSyncMsg("Testing…");
+    try {
+      const res = await fetch(syncUrl); const txt = await res.text();
+      if (/<html/i.test(txt)) throw new Error("HTML/login page returned — fix deployment access to 'Anyone' and use the /exec URL.");
+      const data = JSON.parse(txt);
+      setSyncState("saved"); setSyncMsg(`✓ Connection OK — Sheet reachable (${(data.spends || []).length} spend rows).`);
+    } catch (e) { setSyncState("error"); setSyncMsg(diag(e)); }
+  }
+  const commitSpends = (ns) => { setSpends(ns); pushSheet(ns, withdrawals, shops); };
+  const commitWith = (nw) => { setWithdrawals(nw); pushSheet(spends, nw, shops); };
+  const commitShops = (nsh, ns = spends, nw = withdrawals) => { setShops(nsh); setSpends(ns); setWithdrawals(nw); pushSheet(ns, nw, nsh); };
+
+  function exportCSV() {
+    const rows = [["S.No", "Shop", "Date", "Spent for", "Amount", "Spent By"]];
+    spends.forEach((s, i) => rows.push([i + 1, s.shop, fmtDate(s.date), s.purpose, s.amount, s.by]));
+    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = "shops-spends.csv"; a.click();
+  }
+
+  const NAV = [
+    { id: "dashboard", label: "Dashboard", icon: "layout-dashboard" },
+    { id: "spends", label: "Spends", icon: "receipt" },
+    { id: "withdrawals", label: "Withdrawals", icon: "arrow-up-from-line" },
+    { id: "ledger", label: "Ledger", icon: "book-user" },
+    { id: "profit", label: "Profit Share", icon: "percent" },
+    { id: "shops", label: "Shops", icon: "store" },
+    { id: "settings", label: "Sheet Sync", icon: "settings" },
+  ];
+  const showFilter = ["dashboard", "spends", "withdrawals", "ledger"].includes(tab);
+
+  return (
+    <div className="min-h-screen bg-blue-950 text-slate-100">
+      <div className="border-b border-amber-400/20 bg-blue-950/90 sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-amber-400 flex items-center justify-center"><Icon name="store" className="h-5 w-5 text-blue-950" /></div>
+            <div>
+              <div className="font-bold tracking-wide text-amber-400 leading-tight">Multi-Shop Kids Portal</div>
+              <div className="text-xs text-slate-400 leading-tight">Partner Investment Tracker</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <select value={activeShop} onChange={(e) => setActiveShop(e.target.value)}
+              className="bg-blue-900 border border-amber-400/30 rounded-lg px-3 py-2 text-sm text-amber-300 font-medium focus:outline-none">
+              {shops.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <div className="text-right">
+              <div className="text-xs text-slate-400">This Shop</div>
+              <div className="text-base font-bold text-amber-400">{fmt(shopTotals.invested)}</div>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-5xl mx-auto px-2 flex gap-1 overflow-x-auto">
+          {NAV.map((n) => {
+            const active = tab === n.id;
+            return (
+              <button key={n.id} onClick={() => setTab(n.id)}
+                className={`flex items-center gap-2 px-3 py-2 text-sm whitespace-nowrap border-b-2 ${active ? "border-amber-400 text-amber-400" : "border-transparent text-slate-400 hover:text-slate-200"}`}>
+                <Icon name={n.icon} className="h-4 w-4" /> {n.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 py-6">
+        {showFilter && <DateFilter from={from} to={to} setFrom={setFrom} setTo={setTo} />}
+        {tab === "dashboard" && <Dashboard totals={fTotals} partners={partners} colorOf={colorOf} activeShop={activeShop} shops={shops} spends={spends} withdrawals={withdrawals} inRange={inRange} filtered={!!(from || to)} />}
+        {tab === "spends" && <SpendTable rows={fSpends} all={spends} partners={partners} shop={activeShop} onCommit={commitSpends} />}
+        {tab === "withdrawals" && <WithdrawalTable rows={fWith} all={withdrawals} partners={partners} shop={activeShop} onCommit={commitWith} />}
+        {tab === "ledger" && <Ledger spends={fSpends} withdrawals={fWith} partners={partners} selected={ledgerPartner} setSelected={setLedgerPartner} colorOf={colorOf} totals={fTotals} />}
+        {tab === "profit" && <ProfitShare shop={activeShop} partners={partners} totals={shopTotals} colorOf={colorOf} cfg={shareCfg} setCfg={setShareCfg} />}
+        {tab === "shops" && <Shops shops={shops} spends={spends} withdrawals={withdrawals} activeShop={activeShop} setActiveShop={setActiveShop} onCommitShops={commitShops} />}
+        {tab === "settings" && <SyncPanel syncUrl={syncUrl} setSyncUrl={setSyncUrl} syncState={syncState} syncMsg={syncMsg} onPull={pullSheet} onPush={() => pushSheet()} onTest={testConnection} onExport={exportCSV} />}
+      </div>
+    </div>
+  );
+}
+
+function DateFilter({ from, to, setFrom, setTo }) {
+  const dc = "bg-blue-950 border border-amber-400/20 rounded-lg px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-amber-400";
+  return (
+    <div className="flex flex-wrap items-center gap-2 mb-4 text-sm">
+      <span className="flex items-center gap-1 text-slate-400"><Icon name="calendar" className="h-4 w-4" /> Range</span>
+      <input type="date" className={dc} value={from} onChange={(e) => setFrom(e.target.value)} />
+      <span className="text-slate-500">to</span>
+      <input type="date" className={dc} value={to} onChange={(e) => setTo(e.target.value)} />
+      {(from || to) && <button onClick={() => { setFrom(""); setTo(""); }} className="text-amber-400 hover:text-amber-300 flex items-center gap-1"><Icon name="x" className="h-3.5 w-3.5" /> Clear</button>}
+    </div>
+  );
+}
+
+function Dashboard({ totals, partners, colorOf, activeShop, shops, spends, withdrawals, inRange, filtered }) {
+  const [view, setView] = useState("shop");
+  const maxInv = Math.max(1, ...partners.map((p) => totals.perPartner[p]?.invested || 0));
+  const overview = useMemo(() => shops.map((name) => {
+    const sp = spends.filter((s) => s.shop === name && inRange(s.date));
+    const wd = withdrawals.filter((w) => w.shop === name && inRange(w.date));
+    const inv = sp.reduce((a, s) => a + Number(s.amount || 0), 0);
+    const wdn = wd.reduce((a, w) => a + Number(w.amount || 0), 0);
+    return { name, invested: inv, withdrawn: wdn, net: inv - wdn };
+  }), [shops, spends, withdrawals, inRange]);
+  const grand = overview.reduce((a, o) => a + o.invested, 0);
+  const maxShop = Math.max(1, ...overview.map((o) => o.invested));
+  return (
+    <div className="space-y-5">
+      <div className="inline-flex rounded-lg border border-amber-400/20 overflow-hidden text-sm">
+        <button onClick={() => setView("shop")} className={`px-4 py-1.5 ${view === "shop" ? "bg-amber-400 text-blue-950 font-semibold" : "text-slate-300"}`}>{activeShop}</button>
+        <button onClick={() => setView("all")} className={`px-4 py-1.5 ${view === "all" ? "bg-amber-400 text-blue-950 font-semibold" : "text-slate-300"}`}>All Shops</button>
+      </div>
+      {filtered && <div className="text-xs text-amber-400/70">Showing date-filtered totals.</div>}
+      {view === "shop" ? (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Card><div className="text-xs text-slate-400">Capital Invested</div><div className="text-2xl font-bold text-amber-400 mt-1">{fmt(totals.invested)}</div></Card>
+            <Card><div className="text-xs text-slate-400">Withdrawn / Repaid</div><div className="text-2xl font-bold text-rose-300 mt-1">{fmt(totals.withdrawn)}</div></Card>
+            <Card><div className="text-xs text-slate-400">Net In Business</div><div className="text-2xl font-bold text-emerald-300 mt-1">{fmt(totals.net)}</div></Card>
+          </div>
+          <Card>
+            <div className="text-sm font-semibold text-slate-200 mb-4">Investment by Partner</div>
+            <div className="space-y-4">
+              {partners.length === 0 && <div className="text-sm text-slate-500">No entries for this range.</div>}
+              {partners.map((p) => {
+                const d = totals.perPartner[p] || { invested: 0, withdrawn: 0 };
+                const pct = (d.invested / maxInv) * 100;
+                const share = totals.invested ? ((d.invested / totals.invested) * 100).toFixed(1) : 0;
+                return (
+                  <div key={p}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="font-medium" style={{ color: colorOf(p) }}>{p}</span>
+                      <span className="text-slate-300">{fmt(d.invested)} <span className="text-slate-500">· {share}%</span></span>
+                    </div>
+                    <div className="h-3 rounded-full bg-blue-950 overflow-hidden"><div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: colorOf(p) }} /></div>
+                    {d.withdrawn > 0 && <div className="text-xs text-slate-500 mt-1">Withdrawn {fmt(d.withdrawn)} · Net {fmt(d.invested - d.withdrawn)}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </>
+      ) : (
+        <>
+          <Card><div className="text-xs text-slate-400">Total Across All Shops</div><div className="text-2xl font-bold text-amber-400 mt-1">{fmt(grand)}</div></Card>
+          <Card>
+            <div className="text-sm font-semibold text-slate-200 mb-4">Invested by Shop</div>
+            <div className="space-y-4">
+              {overview.map((o) => (
+                <div key={o.name}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="font-medium text-amber-300">{o.name}</span>
+                    <span className="text-slate-300">{fmt(o.invested)} <span className="text-slate-500">· net {fmt(o.net)}</span></span>
+                  </div>
+                  <div className="h-3 rounded-full bg-blue-950 overflow-hidden"><div className="h-full rounded-full bg-amber-400" style={{ width: `${(o.invested / maxShop) * 100}%` }} /></div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </>
+      )}
+    </div>
+  );
+}
+
+function SpendTable({ rows, all, partners, shop, onCommit }) {
+  const blank = { date: today(), purpose: "", amount: "", by: "" };
+  const [form, setForm] = useState(blank);
+  const [editId, setEditId] = useState(null);
+  const save = () => {
+    if (!form.purpose || !form.amount || !form.by) return;
+    const row = { ...form, amount: Number(form.amount), shop };
+    if (editId) { onCommit(all.map((s) => (s.id === editId ? { ...row, id: editId } : s))); setEditId(null); }
+    else onCommit([...all, { ...row, id: uid() }]);
+    setForm(blank);
+  };
+  const edit = (s) => { setEditId(s.id); setForm({ date: s.date, purpose: s.purpose, amount: s.amount, by: s.by }); };
+  const del = (id) => onCommit(all.filter((s) => s.id !== id));
+  const total = rows.reduce((a, s) => a + Number(s.amount || 0), 0);
+  return (
+    <div className="space-y-4">
+      <Card>
+        <div className="text-sm font-semibold text-slate-200 mb-3">{editId ? "Edit Spend" : "Add Spend"} <span className="text-amber-400/70 font-normal">· {shop}</span></div>
+        <datalist id="partners">{partners.map((p) => <option key={p} value={p} />)}</datalist>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 items-end">
+          <div><label className={labelCls}>Date</label><input type="date" className={inputCls} value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+          <div className="col-span-2"><label className={labelCls}>Spent for</label><input className={inputCls} placeholder="e.g. Chair" value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} /></div>
+          <div><label className={labelCls}>Amount ₹</label><input type="number" className={inputCls} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
+          <div><label className={labelCls}>Spent By</label><input list="partners" className={inputCls} placeholder="Partner" value={form.by} onChange={(e) => setForm({ ...form, by: e.target.value })} /></div>
+        </div>
+        <div className="flex gap-2 mt-3">
+          <button onClick={save} className="flex items-center gap-1 bg-amber-400 text-blue-950 font-semibold px-4 py-2 rounded-lg text-sm hover:bg-amber-300"><Icon name={editId ? "check" : "plus"} className="h-4 w-4" /> {editId ? "Update" : "Add"}</button>
+          {editId && <button onClick={() => { setEditId(null); setForm(blank); }} className="flex items-center gap-1 text-slate-400 px-3 py-2 text-sm"><Icon name="x" className="h-4 w-4" /> Cancel</button>}
+        </div>
+      </Card>
+      <Card className="p-0 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead><tr className="text-left text-slate-400 border-b border-amber-400/15">
+              <th className="px-3 py-2 font-medium">#</th><th className="px-3 py-2 font-medium">Date</th><th className="px-3 py-2 font-medium">Spent for</th><th className="px-3 py-2 font-medium text-right">Amount</th><th className="px-3 py-2 font-medium">Spent By</th><th></th>
+            </tr></thead>
+            <tbody>
+              {rows.map((s, i) => (
+                <tr key={s.id} className="border-b border-blue-900/50 hover:bg-blue-900/20">
+                  <td className="px-3 py-2 text-slate-500">{i + 1}</td>
+                  <td className="px-3 py-2 text-slate-300 whitespace-nowrap">{fmtDate(s.date)}</td>
+                  <td className="px-3 py-2">{s.purpose}</td>
+                  <td className="px-3 py-2 text-right font-medium text-amber-400 whitespace-nowrap">{fmt(s.amount)}</td>
+                  <td className="px-3 py-2 text-slate-300 whitespace-nowrap">{s.by}</td>
+                  <td className="px-3 py-2"><div className="flex gap-2 justify-end">
+                    <button onClick={() => edit(s)} className="text-slate-400 hover:text-amber-400"><Icon name="pencil" className="h-4 w-4" /></button>
+                    <button onClick={() => del(s.id)} className="text-slate-400 hover:text-rose-400"><Icon name="trash-2" className="h-4 w-4" /></button>
+                  </div></td>
+                </tr>
+              ))}
+              {rows.length === 0 && <tr><td colSpan={6} className="px-3 py-6 text-center text-slate-500">No spends in this range for {shop}.</td></tr>}
+            </tbody>
+            <tfoot><tr className="border-t border-amber-400/20"><td colSpan={3} className="px-3 py-2 text-slate-400">Total</td><td className="px-3 py-2 text-right font-bold text-amber-400">{fmt(total)}</td><td colSpan={2}></td></tr></tfoot>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function WithdrawalTable({ rows, all, partners, shop, onCommit }) {
+  const blank = { date: today(), partner: "", amount: "", type: "Repayment", note: "" };
+  const [form, setForm] = useState(blank);
+  const [editId, setEditId] = useState(null);
+  const save = () => {
+    if (!form.partner || !form.amount) return;
+    const row = { ...form, amount: Number(form.amount), shop };
+    if (editId) { onCommit(all.map((w) => (w.id === editId ? { ...row, id: editId } : w))); setEditId(null); }
+    else onCommit([...all, { ...row, id: uid() }]);
+    setForm(blank);
+  };
+  const edit = (w) => { setEditId(w.id); setForm({ date: w.date, partner: w.partner, amount: w.amount, type: w.type, note: w.note }); };
+  const del = (id) => onCommit(all.filter((w) => w.id !== id));
+  return (
+    <div className="space-y-4">
+      <Card>
+        <div className="text-sm font-semibold text-slate-200 mb-3">{editId ? "Edit" : "Record"} Withdrawal / Repayment <span className="text-amber-400/70 font-normal">· {shop}</span></div>
+        <datalist id="pw">{partners.map((p) => <option key={p} value={p} />)}</datalist>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 items-end">
+          <div><label className={labelCls}>Date</label><input type="date" className={inputCls} value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+          <div><label className={labelCls}>Partner</label><input list="pw" className={inputCls} value={form.partner} onChange={(e) => setForm({ ...form, partner: e.target.value })} /></div>
+          <div><label className={labelCls}>Amount ₹</label><input type="number" className={inputCls} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
+          <div><label className={labelCls}>Type</label><select className={inputCls} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}><option>Repayment</option><option>Withdrawal</option><option>Profit share</option></select></div>
+          <div><label className={labelCls}>Note</label><input className={inputCls} value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} /></div>
+        </div>
+        <div className="flex gap-2 mt-3">
+          <button onClick={save} className="flex items-center gap-1 bg-amber-400 text-blue-950 font-semibold px-4 py-2 rounded-lg text-sm hover:bg-amber-300"><Icon name={editId ? "check" : "plus"} className="h-4 w-4" /> {editId ? "Update" : "Add"}</button>
+          {editId && <button onClick={() => { setEditId(null); setForm(blank); }} className="flex items-center gap-1 text-slate-400 px-3 py-2 text-sm"><Icon name="x" className="h-4 w-4" /> Cancel</button>}
+        </div>
+      </Card>
+      {rows.length === 0 ? <Card className="text-center text-slate-500 py-8 text-sm">No withdrawals or repayments in this range for {shop}.</Card> : (
+        <Card className="p-0 overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-sm">
+          <thead><tr className="text-left text-slate-400 border-b border-amber-400/15"><th className="px-3 py-2 font-medium">Date</th><th className="px-3 py-2 font-medium">Partner</th><th className="px-3 py-2 font-medium">Type</th><th className="px-3 py-2 font-medium text-right">Amount</th><th className="px-3 py-2 font-medium">Note</th><th></th></tr></thead>
+          <tbody>{rows.map((w) => (
+            <tr key={w.id} className="border-b border-blue-900/50 hover:bg-blue-900/20">
+              <td className="px-3 py-2 text-slate-300 whitespace-nowrap">{fmtDate(w.date)}</td><td className="px-3 py-2">{w.partner}</td><td className="px-3 py-2 text-slate-400">{w.type}</td>
+              <td className="px-3 py-2 text-right font-medium text-rose-300 whitespace-nowrap">{fmt(w.amount)}</td><td className="px-3 py-2 text-slate-400">{w.note}</td>
+              <td className="px-3 py-2"><div className="flex gap-2 justify-end"><button onClick={() => edit(w)} className="text-slate-400 hover:text-amber-400"><Icon name="pencil" className="h-4 w-4" /></button><button onClick={() => del(w.id)} className="text-slate-400 hover:text-rose-400"><Icon name="trash-2" className="h-4 w-4" /></button></div></td>
+            </tr>))}</tbody>
+        </table></div></Card>
+      )}
+    </div>
+  );
+}
+
+function Ledger({ spends, withdrawals, partners, selected, setSelected, colorOf, totals }) {
+  const active = partners.includes(selected) ? selected : partners[0] || "";
+  const rows = useMemo(() => {
+    const a = spends.filter((s) => s.by === active).map((s) => ({ ...s, kind: "in", label: s.purpose }));
+    const b = withdrawals.filter((w) => w.partner === active).map((w) => ({ ...w, kind: "out", label: w.type + (w.note ? ` · ${w.note}` : "") }));
+    return [...a, ...b].sort((x, y) => (x.date < y.date ? -1 : 1));
+  }, [spends, withdrawals, active]);
+  const d = totals.perPartner[active] || { invested: 0, withdrawn: 0 };
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {partners.map((p) => (
+          <button key={p} onClick={() => setSelected(p)} className={`px-3 py-1.5 rounded-full text-sm border ${active === p ? "border-amber-400 text-blue-950 font-semibold" : "border-amber-400/20 text-slate-300"}`} style={active === p ? { backgroundColor: colorOf(p) } : {}}>{p}</button>
+        ))}
+        {partners.length === 0 && <div className="text-sm text-slate-500">No partners in this range.</div>}
+      </div>
+      {active && <>
+        <div className="grid grid-cols-3 gap-3">
+          <Card><div className="text-xs text-slate-400">Invested</div><div className="text-xl font-bold text-amber-400 mt-1">{fmt(d.invested)}</div></Card>
+          <Card><div className="text-xs text-slate-400">Withdrawn</div><div className="text-xl font-bold text-rose-300 mt-1">{fmt(d.withdrawn)}</div></Card>
+          <Card><div className="text-xs text-slate-400">Net Position</div><div className="text-xl font-bold text-emerald-300 mt-1">{fmt(d.invested - d.withdrawn)}</div></Card>
+        </div>
+        <Card className="p-0 overflow-hidden"><table className="w-full text-sm"><tbody>
+          {rows.map((r) => (
+            <tr key={r.id} className="border-b border-blue-900/50">
+              <td className="px-3 py-2 text-slate-400 whitespace-nowrap">{fmtDate(r.date)}</td><td className="px-3 py-2">{r.label}</td>
+              <td className={`px-3 py-2 text-right font-medium whitespace-nowrap ${r.kind === "in" ? "text-amber-400" : "text-rose-300"}`}>{r.kind === "in" ? "+" : "−"}{fmt(r.amount)}</td>
+            </tr>))}
+          {rows.length === 0 && <tr><td className="px-3 py-6 text-center text-slate-500" colSpan={3}>No entries for {active}.</td></tr>}
+        </tbody></table></Card>
+      </>}
+    </div>
+  );
+}
+
+function ProfitShare({ shop, partners, totals, colorOf, cfg, setCfg }) {
+  const conf = cfg[shop] || { mode: "capital", pct: {} };
+  const setConf = (next) => setCfg({ ...cfg, [shop]: next });
+  const [profit, setProfit] = useState("");
+  const netOf = (p) => Math.max(0, (totals.perPartner[p]?.invested || 0) - (totals.perPartner[p]?.withdrawn || 0));
+  const base = partners.reduce((a, p) => a + netOf(p), 0);
+  const capPct = (p) => (base ? (netOf(p) / base) * 100 : 0);
+  const pctOf = (p) => (conf.mode === "custom" ? Number(conf.pct[p] || 0) : capPct(p));
+  const sumPct = partners.reduce((a, p) => a + pctOf(p), 0);
+  const profitNum = Number(profit || 0);
+  const toCustom = () => { const pct = {}; partners.forEach((p) => (pct[p] = Number(capPct(p).toFixed(1)))); setConf({ mode: "custom", pct }); };
+  if (partners.length === 0) return <Card className="text-center text-slate-500 py-8 text-sm">Add some spends for {shop} first — ownership is derived from capital invested.</Card>;
+  return (
+    <div className="space-y-4">
+      <Card>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="text-sm font-semibold text-slate-200">Profit Share <span className="text-amber-400/70 font-normal">· {shop}</span></div>
+          <div className="inline-flex rounded-lg border border-amber-400/20 overflow-hidden text-xs">
+            <button onClick={() => setConf({ ...conf, mode: "capital" })} className={`px-3 py-1.5 ${conf.mode === "capital" ? "bg-amber-400 text-blue-950 font-semibold" : "text-slate-300"}`}>By capital</button>
+            <button onClick={toCustom} className={`px-3 py-1.5 ${conf.mode === "custom" ? "bg-amber-400 text-blue-950 font-semibold" : "text-slate-300"}`}>Custom %</button>
+          </div>
+        </div>
+        <div className="mt-3 max-w-xs">
+          <label className={labelCls}>Profit to distribute ₹</label>
+          <input type="number" className={inputCls} placeholder="e.g. 50000" value={profit} onChange={(e) => setProfit(e.target.value)} />
+        </div>
+      </Card>
+      <Card className="p-0 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead><tr className="text-left text-slate-400 border-b border-amber-400/15">
+            <th className="px-3 py-2 font-medium">Partner</th><th className="px-3 py-2 font-medium text-right">Net Invested</th><th className="px-3 py-2 font-medium text-right">Share %</th><th className="px-3 py-2 font-medium text-right">Payout</th>
+          </tr></thead>
+          <tbody>
+            {partners.map((p) => (
+              <tr key={p} className="border-b border-blue-900/50">
+                <td className="px-3 py-2 font-medium" style={{ color: colorOf(p) }}>{p}</td>
+                <td className="px-3 py-2 text-right text-slate-300">{fmt(netOf(p))}</td>
+                <td className="px-3 py-2 text-right">
+                  {conf.mode === "custom" ? (
+                    <input type="number" className="w-20 bg-blue-950 border border-amber-400/20 rounded px-2 py-1 text-right text-slate-100 focus:outline-none focus:border-amber-400" value={conf.pct[p] ?? 0} onChange={(e) => setConf({ ...conf, pct: { ...conf.pct, [p]: e.target.value } })} />
+                  ) : (<span className="text-slate-300">{capPct(p).toFixed(1)}%</span>)}
+                </td>
+                <td className="px-3 py-2 text-right font-medium text-emerald-300">{fmt(profitNum * pctOf(p) / 100)}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="border-t border-amber-400/20">
+              <td className="px-3 py-2 text-slate-400">Total</td>
+              <td className="px-3 py-2 text-right text-slate-400">{fmt(base)}</td>
+              <td className={`px-3 py-2 text-right font-semibold ${Math.abs(sumPct - 100) > 0.5 ? "text-rose-300" : "text-slate-300"}`}>{sumPct.toFixed(1)}%</td>
+              <td className="px-3 py-2 text-right font-bold text-emerald-300">{fmt(profitNum * sumPct / 100)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </Card>
+      {conf.mode === "custom" && Math.abs(sumPct - 100) > 0.5 && (<div className="text-xs text-rose-300">Custom percentages add up to {sumPct.toFixed(1)}% — adjust so they total 100%.</div>)}
+      <p className="text-xs text-slate-500">By-capital mode splits profit in proportion to each partner's net invested capital. Switch to Custom % for a fixed agreed split per shop.</p>
+    </div>
+  );
+}
+
+function Shops({ shops, spends, withdrawals, activeShop, setActiveShop, onCommitShops }) {
+  const [name, setName] = useState("");
+  const [editIdx, setEditIdx] = useState(null);
+  const [editName, setEditName] = useState("");
+  const stat = (s) => {
+    const inv = spends.filter((x) => x.shop === s).reduce((a, x) => a + Number(x.amount || 0), 0);
+    const pc = new Set(spends.filter((x) => x.shop === s).map((x) => x.by)).size;
+    return { inv, pc };
+  };
+  const add = () => { const n = name.trim(); if (!n || shops.includes(n)) return; onCommitShops([...shops, n]); setName(""); setActiveShop(n); };
+  const rename = (i) => {
+    const n = editName.trim(); if (!n) { setEditIdx(null); return; }
+    const old = shops[i];
+    onCommitShops(shops.map((s, idx) => (idx === i ? n : s)), spends.map((x) => (x.shop === old ? { ...x, shop: n } : x)), withdrawals.map((x) => (x.shop === old ? { ...x, shop: n } : x)));
+    if (activeShop === old) setActiveShop(n);
+    setEditIdx(null);
+  };
+  const del = (s) => {
+    if (shops.length === 1) return;
+    if (!confirm(`Delete ${s} and all its records?`)) return;
+    onCommitShops(shops.filter((x) => x !== s), spends.filter((x) => x.shop !== s), withdrawals.filter((x) => x.shop !== s));
+  };
+  return (
+    <div className="space-y-4">
+      <Card>
+        <div className="text-sm font-semibold text-slate-200 mb-3">Add a Shop</div>
+        <div className="flex gap-2">
+          <input className={inputCls} placeholder="e.g. Bangalore-SHOP02" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} />
+          <button onClick={add} className="flex items-center gap-1 bg-amber-400 text-blue-950 font-semibold px-4 py-2 rounded-lg text-sm whitespace-nowrap"><Icon name="plus" className="h-4 w-4" /> Add</button>
+        </div>
+        <p className="text-xs text-slate-500 mt-2">Tip: keep a naming pattern like City-SHOP01, City-SHOP02 for easy sorting.</p>
+      </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {shops.map((s, i) => {
+          const st = stat(s);
+          return (
+            <Card key={s} className={activeShop === s ? "border-amber-400/60" : ""}>
+              {editIdx === i ? (
+                <div className="flex gap-2">
+                  <input className={inputCls} value={editName} onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && rename(i)} autoFocus />
+                  <button onClick={() => rename(i)} className="text-emerald-300"><Icon name="check" className="h-5 w-5" /></button>
+                  <button onClick={() => setEditIdx(null)} className="text-slate-400"><Icon name="x" className="h-5 w-5" /></button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between">
+                    <button onClick={() => setActiveShop(s)} className="font-semibold text-amber-300 text-left">{s}</button>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setEditIdx(i); setEditName(s); }} className="text-slate-400 hover:text-amber-400"><Icon name="pencil" className="h-4 w-4" /></button>
+                      <button onClick={() => del(s)} className="text-slate-400 hover:text-rose-400 disabled:opacity-30" disabled={shops.length === 1}><Icon name="trash-2" className="h-4 w-4" /></button>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-sm text-slate-300">{fmt(st.inv)} invested · {st.pc} partner{st.pc === 1 ? "" : "s"}</div>
+                  {activeShop === s && <div className="text-xs text-amber-400/80 mt-1">● Active</div>}
+                </>
+              )}
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SyncPanel({ syncUrl, setSyncUrl, syncState, syncMsg, onPull, onPush, onTest, onExport }) {
+  return (
+    <div className="space-y-4 max-w-2xl">
+      <Card>
+        <div className="text-sm font-semibold text-slate-200 mb-2">Google Sheet Connection</div>
+        <p className="text-xs text-slate-400 mb-3">Paste your Apps Script Web App URL (must end in <span className="text-amber-400">/exec</span>, deployed with access = <span className="text-amber-400">Anyone</span>).</p>
+        <input className={inputCls} placeholder="https://script.google.com/macros/s/…/exec" value={syncUrl} onChange={(e) => setSyncUrl(e.target.value)} />
+        <div className="flex flex-wrap gap-2 mt-3">
+          <button onClick={onTest} disabled={!syncUrl} className="flex items-center gap-1 border border-amber-400/40 text-amber-300 px-4 py-2 rounded-lg text-sm disabled:opacity-40"><Icon name="refresh-cw" className="h-4 w-4" /> Test Connection</button>
+          <button onClick={onPush} disabled={!syncUrl} className="flex items-center gap-1 bg-amber-400 text-blue-950 font-semibold px-4 py-2 rounded-lg text-sm disabled:opacity-40"><Icon name="cloud-upload" className="h-4 w-4" /> Push to Sheet</button>
+          <button onClick={onPull} disabled={!syncUrl} className="flex items-center gap-1 border border-amber-400/30 text-slate-200 px-4 py-2 rounded-lg text-sm disabled:opacity-40"><Icon name="refresh-cw" className="h-4 w-4" /> Reload from Sheet</button>
+          <button onClick={onExport} className="flex items-center gap-1 border border-amber-400/30 text-slate-200 px-4 py-2 rounded-lg text-sm"><Icon name="download" className="h-4 w-4" /> Export CSV</button>
+        </div>
+        {syncMsg && <div className={`text-xs mt-3 break-words ${syncState === "error" ? "text-rose-300" : "text-emerald-300"}`}>{syncMsg}</div>}
+      </Card>
+      <Card>
+        <div className="text-sm font-semibold text-slate-200 mb-1">Quick checks</div>
+        <ul className="text-xs text-slate-400 leading-relaxed list-disc pl-4 space-y-1">
+          <li>URL ends in <span className="text-amber-300">/exec</span> (not /dev).</li>
+          <li>Deployment access = <span className="text-amber-300">Anyone</span>.</li>
+          <li>After editing the script: <span className="text-amber-300">Deploy → Manage deployments → New version</span>.</li>
+          <li>Always-reliable fallback: <span className="text-amber-300">Export CSV</span> → paste into the Sheet.</li>
+        </ul>
+      </Card>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
